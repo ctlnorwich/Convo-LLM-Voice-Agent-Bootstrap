@@ -1,0 +1,40 @@
+{
+  "keys_file": "keys.json",
+  "audio": {
+    "sample_rate_hz": 16000,
+    "channels": 1,
+    "max_record_seconds": 10.0,
+    "vad_chunk_samples": 1600,
+    "vad_silence_threshold": 0.01,
+    "vad_silence_chunks": 15,
+    "input_device": null,
+    "temp_recording_file": "temp_audio/recording.wav"
+  },
+  "whisper": {
+    "model_name": "base",
+    "language": "en"
+  },
+  "trigger": {
+    "source": "keyboard",
+    "serial_port": "/dev/ttyUSB0",
+    "serial_baud_rate": 115200,
+    "serial_trigger_text": "TRIGGER"
+  },
+  "llm": {
+    "provider": "ollama",
+    "model": "gemma:2b",
+    "ollama_base_url": "http://127.0.0.1:11434",
+    "max_history_turns": 6
+  },
+  "tts": {
+    "piper_binary": "piper",
+    "voice_model_path": "voices/en_US-lessac-medium.onnx",
+    "output_wav": "temp_audio/tts_output.wav",
+    "speaker_id": null
+  },
+  "prompts": {
+    "session_preamble": "You are the captain of a pirate ship. You speak in a gruff voice and use pirate slang. You are friendly and helpful, but always stay in character as a pirate.",
+    "request_preamble": "Respond in plain spoken English."
+  }
+}
+

@@ -1,0 +1,5 @@
+{
+  "OPENAI_API_KEY": "replace_with_openai_key",
+  "GEMINI_API_KEY": "replace_with_gemini_key",
+  "ANTHROPIC_API_KEY": "replace_with_anthropic_key"
+}
