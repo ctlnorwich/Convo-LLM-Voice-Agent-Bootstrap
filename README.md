@@ -4,9 +4,9 @@ A template and playground for digital artists to easier experiment with conversa
 
 **How it works**: 
 
-All voice based conversational llm agents consist of three parts.
+All voice based conversational LLM agents consist of three parts:
 
-- **STT**: Speech-to-Tech. Whisper is the locally run general-purpose speech recognition model used here.
+- **STT**: Speech-to-Text. Whisper is the locally run general-purpose speech recognition model used here.
 - **LLM**: Large-Language Models. Ollama is the default application we use to run different LLMs locally but is switchable to use an online model like OpenAIs chatGPT, Googles Gemini, or Anthropics Claude.
 - **TTS**: Text-to-Speech. Piper is the speech system that generates voices from provided text.
 
@@ -14,17 +14,17 @@ All of these are themselves programs that use a neural network transformer archi
 
 **User flow**:
 
-1. Waits for a trigger (Dafault is the Enter key) to begin listening.
+1. Waits for a trigger (Default is the Enter key) to begin listening.
 2. Whisper transcribes your speech to text.
-3. Ollama running a LLM model as a service generates a text response from the transcription. (Online models are queried though a HTTP request)
+3. Ollama, running a LLM model as a service, generates a text response from the transcription. (Online models are queried though a HTTP request)
 4. Piper speaks the response aloud in a voice.
-5. Repeat until either program is terminated with Ctrl+C or 
+5. Repeat until either the program is terminated with Ctrl+C or the user says "Exit conversation"
 
 > [!NOTE]
 > When using Ollama the script starts the Ollama server automatically, checks that the model you specified in `config.json` is downloaded (and pulls it if not), and shuts the server down cleanly when you exit.
 
 > [!CAUTION]
-> A LLM is not true intelligence. It does not truly understand the world, form intentions, or reason from first principles - it predicts likely next words by learning statistical patterns from enormous text datasets. Its outputs may feel intelligent but this is because those patterns encode a huge amount of human language, knowledge, and style. LLMs are in reality the result of advanced data science using massive computing power to do large-scale training, optimization, and probability; not conscious thought or independent understanding.
+> A LLM is not a true intelligence. It does not truly understand the world, form intentions, rationalise decisions or reason from first principles; it predicts likely next words by learning statistical patterns from enormous text datasets. Its outputs may feel intelligent but this is because those patterns encode a huge amount of human language, knowledge, and writing style. LLMs are not technological magic - in reality they are the result of advanced data science using massive computing power to do large-scale training, optimization, and probability. One of the consequences of this approach is that LLMs can deceive, hallucinate, be biased and even by confidently incorrect as it mirrors the inherently flawed human data it works from.
 
 ---
 
@@ -74,7 +74,7 @@ uv run main.py
 The script starts Ollama, pulls the model if needed, and is ready to talk.
 Press Enter to record each prompt.
 
-Say `exit` or `quit` to stop the session.
+Say `Exit conversation` to stop the session.
 
 ---
 
@@ -129,7 +129,7 @@ uv run main.py
 
 The script starts Ollama, pulls the model if needed, and is ready to talk.
 
-Say `exit` or `quit` to stop the session.
+Say `Exit conversation` to stop the session.
 
 If audio playback fails, ensure one of `aplay`, `paplay`, or `ffplay` is installed.
 

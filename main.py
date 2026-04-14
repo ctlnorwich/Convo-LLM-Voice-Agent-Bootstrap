@@ -630,6 +630,11 @@ def play_audio_file(audio_file: Path) -> None:
     raise RuntimeError(f"Unsupported OS for audio playback: {platform.system()}")
 
 
+def is_exit_phrase(transcribed_text: str) -> bool:
+    normalized_text = " ".join(transcribed_text.strip().lower().split())
+    return normalized_text == "exit conversation"
+
+
 def main() -> None:
     settings = load_app_settings()
     keys = load_keys(settings.keys_file)
@@ -654,7 +659,7 @@ def main() -> None:
 
     history: list[tuple[str, str]] = []
 
-    print("Ready. Say 'exit' or 'quit' to stop.")
+    print("Ready. Say 'Exit conversation' to stop.")
 
     try:
         while True:
@@ -671,7 +676,7 @@ def main() -> None:
 
                 print(f"You said: {user_text}")
 
-                if user_text.strip().lower() in {"exit", "quit"}:
+                if is_exit_phrase(user_text):
                     print("Stopping conversation loop.")
                     break
 
