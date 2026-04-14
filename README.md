@@ -12,7 +12,7 @@ All voice based conversational llm agents consist of three parts.
 
 All of these are themselves programs that use a neural network transformer architecture (the T in ChatGPT). This is the groundbreaking programming technique that has made many modern "AI" programs possible. 
 
-****User flow**:
+**User flow**:
 
 1. Waits for a trigger (Dafault is the Enter key) to begin listening.
 2. Whisper transcribes your speech to text.
