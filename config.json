@@ -22,7 +22,7 @@
   },
   "llm": {
     "provider": "ollama",
-    "model": "gemma:2b",
+    "model": "gemma3:1b",
     "ollama_base_url": "http://127.0.0.1:11434",
     "max_history_turns": 6
   },

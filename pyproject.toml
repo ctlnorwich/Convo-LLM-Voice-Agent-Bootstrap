@@ -1,5 +1,5 @@
 [project]
-name = "convo-llm-template"
+name = "Convo-LLM-Voice-Agent-Bootstrap"
 version = "0.1.0"
 description = "Voice-first conversational LLM template for digital artists"
 readme = "README.md"

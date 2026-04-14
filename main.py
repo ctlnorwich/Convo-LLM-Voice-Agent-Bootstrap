@@ -3,12 +3,14 @@ from __future__ import annotations
 import json
 import os
 import platform
+import signal
 import shutil
 import subprocess
 import sys
 import textwrap
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -92,7 +94,6 @@ class AppSettings:
 @dataclass
 class OllamaRuntime:
     process: subprocess.Popen | None = None
-    started_with_start_cmd: bool = False
 
 
 def _update_dataclass_fields(target: object, updates: dict[str, object]) -> None:
@@ -142,6 +143,27 @@ def load_keys(keys_file: Path) -> dict[str, str]:
         return {}
     data = json.loads(keys_file.read_text(encoding="utf-8"))
     return {str(key): str(value) for key, value in data.items()}
+
+
+def sanitize_for_filename(value: str) -> str:
+    allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.")
+    return "".join(ch if ch in allowed else "_" for ch in value)
+
+
+def create_chat_log_path(model_name: str) -> Path:
+    timestamp = datetime.now().isoformat(timespec="seconds")
+    safe_timestamp = timestamp.replace(":", "-")
+    safe_model = sanitize_for_filename(model_name)
+    chat_dir = Path("chat_logs")
+    chat_dir.mkdir(parents=True, exist_ok=True)
+    return chat_dir / f"{safe_timestamp}__{safe_model}.json"
+
+
+def write_chat_log(chat_log_path: Path, chat_log_data: dict[str, object]) -> None:
+    chat_log_path.write_text(
+        json.dumps(chat_log_data, indent=2, ensure_ascii=True),
+        encoding="utf-8",
+    )
 
 
 def wait_for_trigger(settings: TriggerSettings) -> None:
@@ -272,85 +294,81 @@ def is_ollama_running(base_url: str) -> bool:
         return False
 
 
-def ollama_supports_start_stop() -> bool:
-    """Return True if this local Ollama CLI supports service-level start/stop."""
-    try:
-        result = subprocess.run(
-            ["ollama", "help"],
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-    except OSError:
-        return False
-
-    output = result.stdout.lower()
-    return "\n  start" in output and "\n  stop" in output
-
-
 def ollama_host_from_base_url(base_url: str) -> str:
     """Convert a base URL into host:port format for OLLAMA_HOST."""
     parsed = urlparse(base_url)
-    if parsed.hostname and parsed.port:
-        return f"{parsed.hostname}:{parsed.port}"
-    # Fall back to the default Ollama host if parsing fails.
-    return "127.0.0.1:11434"
+    host = parsed.hostname or "127.0.0.1"
+    port = parsed.port or 11434
+    return f"{host}:{port}"
+
+
+def ollama_port_from_base_url(base_url: str) -> int:
+    parsed = urlparse(base_url)
+    return parsed.port or 11434
+
+
+def release_ollama_port(base_url: str) -> None:
+    """
+    Release the configured Ollama port by terminating any process listening on it.
+    This keeps startup behavior simple and predictable.
+    """
+    port = ollama_port_from_base_url(base_url)
+    result = subprocess.run(
+        ["lsof", "-ti", f"tcp:{port}", "-sTCP:LISTEN"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    pids = [int(line.strip()) for line in result.stdout.splitlines() if line.strip().isdigit()]
+    if not pids:
+        return
+
+    print(f"Releasing port {port} by stopping existing listener(s): {pids}")
+
+    for pid in pids:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            continue
+        except PermissionError:
+            continue
+
+    # Give processes a moment to exit gracefully.
+    time.sleep(1)
+
+    # Force kill any remaining listeners.
+    for pid in pids:
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            continue
+        except PermissionError:
+            continue
+        os.kill(pid, signal.SIGKILL)
 
 
 def start_ollama_if_needed(base_url: str) -> OllamaRuntime | None:
     """
-    Start 'ollama serve' in the background if it is not already running.
-    Returns the Popen handle if we started it, None if it was already running.
+    Simple startup flow:
+      1) release configured Ollama port
+      2) start a fresh 'ollama serve' in background
+      3) wait until API is reachable
     """
-    if is_ollama_running(base_url):
-        print("Ollama is already running.")
-        return None
-
     if not shutil.which("ollama"):
         raise RuntimeError(
             "'ollama' command not found. Install Ollama from https://ollama.com"
         )
 
-    log_dir = Path("temp_audio")
+    release_ollama_port(base_url)
+
+    log_dir = Path("llm_logs")
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "ollama_server.log"
 
     ollama_host = ollama_host_from_base_url(base_url)
     env = os.environ.copy()
     env["OLLAMA_HOST"] = ollama_host
-
-    if ollama_supports_start_stop():
-        print(f"Starting Ollama with start command on {ollama_host}...", end="", flush=True)
-        result = subprocess.run(
-            ["ollama", "start"],
-            check=False,
-            capture_output=True,
-            text=True,
-            env=env,
-        )
-        log_file.write_text(
-            (result.stdout or "") + (result.stderr or ""),
-            encoding="utf-8",
-        )
-
-        if result.returncode != 0 and not is_ollama_running(base_url):
-            raise RuntimeError(
-                "Failed to start Ollama with 'ollama start'. "
-                f"See {log_file} for details."
-            )
-
-        for _ in range(60):
-            time.sleep(1)
-            if is_ollama_running(base_url):
-                print(" ready.")
-                return OllamaRuntime(process=None, started_with_start_cmd=True)
-            print(".", end="", flush=True)
-
-        print()
-        raise RuntimeError(
-            "Ollama did not become ready within 60 seconds after 'ollama start'. "
-            f"See {log_file} for details."
-        )
 
     print(f"Starting Ollama in the background on {ollama_host}...", end="", flush=True)
     ollama_process = subprocess.Popen(
@@ -364,32 +382,13 @@ def start_ollama_if_needed(base_url: str) -> OllamaRuntime | None:
     for _ in range(60):
         time.sleep(1)
         if ollama_process.poll() is not None:
-            # Common case: a different Ollama process already owns the port.
-            # If the API is reachable, treat that as success.
-            if is_ollama_running(base_url):
-                print(" already running.")
-                return None
-
-            log_text = ""
-            try:
-                log_text = log_file.read_text(encoding="utf-8")
-            except OSError:
-                pass
-
-            if "address already in use" in log_text:
-                raise RuntimeError(
-                    "Ollama port is already in use but the API is not reachable at "
-                    f"{base_url}. Check config.json llm.ollama_base_url or stop the "
-                    "other process using that port."
-                )
-
             raise RuntimeError(
                 "Ollama process exited before becoming ready. "
                 f"See {log_file} for details."
             )
         if is_ollama_running(base_url):
             print(" ready.")
-            return OllamaRuntime(process=ollama_process, started_with_start_cmd=False)
+            return OllamaRuntime(process=ollama_process)
         print(".", end="", flush=True)
 
     print()  # newline after the dots
@@ -403,11 +402,6 @@ def start_ollama_if_needed(base_url: str) -> OllamaRuntime | None:
 def stop_ollama(ollama_runtime: OllamaRuntime | None) -> None:
     """Stop Ollama if it was started by this script."""
     if ollama_runtime is None:
-        return
-
-    if ollama_runtime.started_with_start_cmd:
-        print("Stopping Ollama with stop command...")
-        subprocess.run(["ollama", "stop"], check=False, capture_output=True, text=True)
         return
 
     ollama_process = ollama_runtime.process
@@ -639,6 +633,14 @@ def play_audio_file(audio_file: Path) -> None:
 def main() -> None:
     settings = load_app_settings()
     keys = load_keys(settings.keys_file)
+    chat_log_path = create_chat_log_path(settings.llm.model)
+    chat_log_data: dict[str, object] = {
+        "meta": {
+            "llm": asdict(settings.llm),
+            "prompts": asdict(settings.prompts),
+        },
+        "messages": [],
+    }
 
     # If using Ollama, start it in the background and ensure the configured model
     # is present locally.  The user only needs to edit config.json and run the script.
@@ -682,6 +684,22 @@ def main() -> None:
                 assistant_text = call_llm(prompt, settings.llm, keys)
                 print(f"Assistant: {assistant_text}")
 
+                chat_log_data["messages"].append(
+                    {
+                        "timestamp": datetime.now().isoformat(timespec="seconds"),
+                        "role": "user",
+                        "text": user_text,
+                    }
+                )
+                chat_log_data["messages"].append(
+                    {
+                        "timestamp": datetime.now().isoformat(timespec="seconds"),
+                        "role": "assistant",
+                        "text": assistant_text,
+                    }
+                )
+                write_chat_log(chat_log_path, chat_log_data)
+
                 speak_with_piper(assistant_text, settings.tts)
                 history.append((user_text, assistant_text))
 
@@ -692,6 +710,7 @@ def main() -> None:
                 print(f"Error: {exc}", file=sys.stderr)
                 time.sleep(0.2)
     finally:
+        write_chat_log(chat_log_path, chat_log_data)
         # Always stop Ollama if we started it, even on crash or Ctrl+C.
         stop_ollama(ollama_runtime)
 

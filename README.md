@@ -1,10 +1,16 @@
-# Conversational LLM Template (Voice First)
+# Convo LLM Voice Agent Bootstrap
 
-A Python template for digital artists to experiment with conversational LLM workflows:
+A template and playground for digital artists to easier experiment with conversational LLM (Large Language Model) voice agents and explore the technology critically. It is a local first application, defaulting to on-device models for privacy and sustainability concerns.
 
-- **STT**: Whisper (runs locally)
-- **LLM**: Ollama by default, switchable to OpenAI, Gemini, or Anthropic
-- **TTS**: Piper (local, English voice)
+How it works: 
+
+All voice based conversational llm agents consist of three parts.
+
+- **STT**: Speech-to-Tech. Whisper 
+- **LLM**: Ollama by default switchable to OpenAI, Gemini, or Anthropic
+- **TTS**: Piper 
+
+All of these are trans
 
 How it works:
 
@@ -12,8 +18,6 @@ How it works:
 2. Whisper transcribes your speech
 3. The LLM generates a response
 4. Piper speaks the response aloud
-
-**To use:** edit `config.json`, then run `uv run main.py`. That's it.
 
 When using Ollama the script starts the Ollama server automatically, checks that
 the model you specified in `config.json` is downloaded (and pulls it if not), and
@@ -43,14 +47,18 @@ source .venv/bin/activate
 uv sync
 ```
 
-### Download a Piper English voice
+### Download Piper English voices
 
 ```bash
-mkdir -p voices
-curl -L -o voices/en_US-lessac-medium.onnx \
-  https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
-curl -L -o voices/en_US-lessac-medium.onnx.json \
-  https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
+./download_english_piper_voices.sh voices
+```
+
+Then choose one voice in `config.json`, for example:
+
+```json
+"tts": {
+  "voice_model_path": "voices/en_US/lessac/medium/en_US-lessac-medium.onnx"
+}
 ```
 
 ### Configure and run
@@ -63,6 +71,8 @@ uv run main.py
 
 The script starts Ollama, pulls the model if needed, and is ready to talk.
 Press Enter to record each prompt.
+
+Say `exit` or `quit` to stop the session.
 
 ---
 
@@ -93,14 +103,10 @@ source .venv/bin/activate
 uv sync
 ```
 
-### Download a Piper English voice
+### Download Piper English voices
 
 ```bash
-mkdir -p voices
-curl -L -o voices/en_US-lessac-medium.onnx \
-  https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
-curl -L -o voices/en_US-lessac-medium.onnx.json \
-  https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
+./download_english_piper_voices.sh voices
 ```
 
 ### Configure and run
@@ -121,11 +127,33 @@ uv run main.py
 
 The script starts Ollama, pulls the model if needed, and is ready to talk.
 
+Say `exit` or `quit` to stop the session.
+
 If audio playback fails, ensure one of `aplay`, `paplay`, or `ffplay` is installed.
 
 ---
 
-## 3) Configuration — config.json
+## 3) Logs
+
+The app writes logs to dedicated folders:
+
+- `llm_logs/ollama_server.log` — Ollama server start/runtime logs
+- `chat_logs/<ISO_DATETIME>__<MODEL>.json` — one JSON file per chat session
+- `temp_audio/` — temporary input/output WAV files used during each turn
+
+Each chat session JSON includes:
+
+- `meta.llm` — exact `llm` config values used for that session
+- `meta.prompts` — exact `prompts` config values used for that session
+- `messages` — timestamped user/assistant text messages
+
+Example filename:
+
+- `chat_logs/2026-04-13T18-45-02__llama3.2_3b.json`
+
+---
+
+## 4) Configuration — config.json
 
 All runtime settings live in `config.json`. Edit it freely; no Python code changes
 are needed.
@@ -139,6 +167,11 @@ config.json
 ├── tts          — piper binary path, voice model path
 └── prompts      — session preamble, per-request preamble
 ```
+
+Whisper model guidance:
+
+- `base` is the recommended default on macOS/desktop
+- `tiny` is recommended on Raspberry Pi for lower RAM/CPU usage
 
 ### Changing the LLM provider
 
@@ -156,7 +189,7 @@ When using Ollama, the model is pulled automatically on first run.
 
 ---
 
-## 4) API keys
+## 5) API keys
 
 For online providers, create a `keys.json` file in the project root:
 
@@ -172,7 +205,7 @@ You only need the key for the provider you are using. A template is at `keys.exa
 
 ---
 
-## 5) Preambles
+## 6) Preambles
 
 In `config.json` under `prompts`:
 
@@ -190,7 +223,7 @@ Example:
 
 ---
 
-## 6) Trigger modes
+## 7) Trigger modes
 
 Set `trigger.source` in `config.json`:
 
@@ -208,10 +241,63 @@ The microcontroller should send a line containing the trigger text (default: `TR
 
 ---
 
-## 7) Notes
+## 8) English Piper voices
 
-- Whisper model options: `tiny`, `base`, `small`, `medium`, `large`, `turbo`.
-  Use `base` on macOS/desktop. Use `tiny` on Raspberry Pi.
-- Say `exit` or `quit` to stop the session.
-- Temporary recordings are stored in `temp_audio/` and overwritten each turn.
-- If Piper fails, confirm the voice model `.onnx` path in `config.json` is correct.
+This project includes a downloader for all English voices under:
+
+- `https://huggingface.co/rhasspy/piper-voices/tree/main/en`
+
+The selectable English voices currently include:
+
+| Locale | Speaker | Quality | Voice id |
+|--------|---------|---------|----------|
+| en_GB | alan | low | en_GB-alan-low |
+| en_GB | alan | medium | en_GB-alan-medium |
+| en_GB | alba | medium | en_GB-alba-medium |
+| en_GB | aru | medium | en_GB-aru-medium |
+| en_GB | cori | high | en_GB-cori-high |
+| en_GB | cori | medium | en_GB-cori-medium |
+| en_GB | jenny_dioco | medium | en_GB-jenny_dioco-medium |
+| en_GB | northern_english_male | medium | en_GB-northern_english_male-medium |
+| en_GB | semaine | medium | en_GB-semaine-medium |
+| en_GB | southern_english_female | low | en_GB-southern_english_female-low |
+| en_GB | vctk | medium | en_GB-vctk-medium |
+| en_US | amy | low | en_US-amy-low |
+| en_US | amy | medium | en_US-amy-medium |
+| en_US | arctic | medium | en_US-arctic-medium |
+| en_US | bryce | medium | en_US-bryce-medium |
+| en_US | danny | low | en_US-danny-low |
+| en_US | hfc_female | medium | en_US-hfc_female-medium |
+| en_US | hfc_male | medium | en_US-hfc_male-medium |
+| en_US | joe | medium | en_US-joe-medium |
+| en_US | john | medium | en_US-john-medium |
+| en_US | kathleen | low | en_US-kathleen-low |
+| en_US | kristin | medium | en_US-kristin-medium |
+| en_US | kusal | medium | en_US-kusal-medium |
+| en_US | l2arctic | medium | en_US-l2arctic-medium |
+| en_US | lessac | high | en_US-lessac-high |
+| en_US | lessac | low | en_US-lessac-low |
+| en_US | lessac | medium | en_US-lessac-medium |
+| en_US | libritts | high | en_US-libritts-high |
+
+These are English voice models. Many other languages are available in the same
+Hugging Face repository under other language folders.
+
+---
+
+## 9) Debugging
+
+If the app fails to start or run, check these first:
+
+- Ollama failed to start:
+  read `llm_logs/ollama_server.log` for the exact startup error.
+- Ollama port conflict:
+  another service may already be on your configured `llm.ollama_base_url` port.
+  stop the conflicting process or update the base URL in `config.json`.
+- Model pull/generation errors:
+  verify `llm.model` exists for the selected provider and confirm network access.
+- Piper synthesis/playback errors:
+  verify `tts.voice_model_path` points to a valid `.onnx` file and ensure the matching
+  `.onnx.json` file exists alongside it.
+- No serial trigger response:
+  install pyserial (`uv add pyserial`) and confirm `trigger.serial_port` and baud rate.
