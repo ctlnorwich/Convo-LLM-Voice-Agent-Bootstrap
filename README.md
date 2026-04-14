@@ -20,13 +20,11 @@ All of these are themselves programs that use a neural network transformer archi
 4. Piper speaks the response aloud in a voice.
 5. Repeat until either program is terminated with Ctrl+C or 
 
-[!NOTE]
-When using Ollama the script starts the Ollama server automatically, checks that
-the model you specified in `config.json` is downloaded (and pulls it if not), and
-shuts the server down cleanly when you exit.
+> [!NOTE]
+> When using Ollama the script starts the Ollama server automatically, checks that the model you specified in `config.json` is downloaded (and pulls it if not), and shuts the server down cleanly when you exit.
 
-[!CAUTION]
-This is an LLM not a true artificial intelligence!
+> [!CAUTION]
+> This is an LLM not a true artificial intelligence!
 
 ---
 
