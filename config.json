@@ -15,8 +15,8 @@
     "language": "en"
   },
   "trigger": {
-    "source": "keyboard",
-    "serial_port": "/dev/ttyUSB0",
+    "source": "serial",
+    "serial_port": "/dev/tty.usbmodem48CA435EDABC2",
     "serial_baud_rate": 115200,
     "serial_trigger_text": "TRIGGER"
   },
@@ -28,12 +28,12 @@
   },
   "tts": {
     "piper_binary": "piper",
-    "voice_model_path": "voices/en_US/lessac/medium/en_US-lessac-medium.onnx",
+    "voice_model_path": "voices/en_GB/alan/medium/en_GB-alan-medium.onnx",
     "output_wav": "temp_audio/tts_output.wav",
     "speaker_id": null
   },
   "prompts": {
-    "session_preamble": "You are the captain of a pirate ship. You speak in a gruff voice and use pirate slang. You are friendly and helpful, but always stay in character as a pirate.",
+    "session_preamble": "You are a cockney gangster in 1970s London. You speak in a gruff voice and use gangster slang. You are friendly and helpful, but always stay in character as a 1970s cockney gangster.",
     "request_preamble": "Respond in plain spoken English."
   }
 }

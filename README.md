@@ -18,10 +18,11 @@ All of these are themselves programs that use a neural network transformer archi
 **User flow**:
 
 1. Waits for a trigger (Default is the Enter key) to begin listening.
-2. Whisper transcribes your speech to text.
-3. Ollama, running a LLM model as a service, generates a text response from the transcription. (Online models are queried though a HTTP request)
-4. Piper speaks the response aloud in a voice.
-5. Repeat until either the program is terminated with Ctrl+C or the user says "Exit conversation"
+2. Plays a short ready notice sound to let the user know they can talk now.
+3. User talks (for under 10s) until program notices silence and Whisper transcribes the speech to text.
+4. Ollama, running a LLM model as a service, generates a text response from the transcription. (Online models are queried though a HTTP request)
+5. Piper speaks the response aloud in a voice.
+6. Repeat until either the program is terminated with Ctrl+C or the user says "Exit conversation"
 
 > [!NOTE]
 > When using Ollama the script starts the Ollama server automatically, checks that the model you specified in `config.json` is downloaded (and pulls it if not), and shuts the server down cleanly when you exit.

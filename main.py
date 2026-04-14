@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import platform
+import re
 import signal
 import shutil
 import subprocess
 import sys
 import textwrap
 import time
+import warnings
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -34,6 +37,7 @@ class AudioSettings:
     vad_silence_chunks: int = 15     # ~1.5 seconds of trailing silence
     input_device: int | None = None
     temp_recording_file: Path = Path("temp_audio/recording.wav")
+    ready_notice_audio_file: Path = Path("temp_audio/ready_notice.wav")
 
 
 @dataclass
@@ -70,7 +74,7 @@ class TTSSettings:
 
 @dataclass
 class PromptSettings:
-    # Session preamble is included in every turn and sets overall behavior.
+    # Session preamble is included in every turn and sets overall behaviour.
     session_preamble: str = (
         "You are an assistant collaborating with a digital artist. "
         "Be concise, concrete, and imagination-friendly."
@@ -168,7 +172,7 @@ def write_chat_log(chat_log_path: Path, chat_log_data: dict[str, object]) -> Non
 
 def wait_for_trigger(settings: TriggerSettings) -> None:
     if settings.source == "keyboard":
-        input("Press Enter to record the next prompt (Ctrl+C to quit)... ")
+        input("Press Enter to talk to agent (Ctrl+C or say 'terminate program' to quit)... ")
         return
 
     if settings.source == "serial":
@@ -213,7 +217,7 @@ def wait_for_serial_trigger(settings: TriggerSettings) -> None:
 #   2. Set trigger.serial_port to your device path.
 
 
-def record_audio(settings: AudioSettings) -> Path:
+def record_audio(settings: AudioSettings, ready_notice_file: Path | None = None) -> Path:
     """
     Record from the microphone using voice-activity detection (VAD).
 
@@ -245,6 +249,9 @@ def record_audio(settings: AudioSettings) -> Path:
         "stops automatically after silence)..."
     )
 
+    # Play the ready cue after announcing listening state so timing feels natural.
+    play_ready_notice_sound(ready_notice_file)
+
     with sd.InputStream(
         samplerate=settings.sample_rate_hz,
         channels=settings.channels,
@@ -273,6 +280,51 @@ def record_audio(settings: AudioSettings) -> Path:
     audio_data = np.concatenate(recorded_chunks, axis=0)
     sf.write(str(settings.temp_recording_file), audio_data, settings.sample_rate_hz)
     return settings.temp_recording_file
+
+
+def prepare_ready_notice_sound(settings: AudioSettings) -> Path | None:
+    """
+    Create a short pyfxr notice sound once and cache it as a WAV file.
+    Returns None if generation fails so the conversation flow can continue.
+    """
+    try:
+        import pyfxr
+    except ImportError:
+        print(
+            "Warning: pyfxr is not installed; ready notice sound is disabled.",
+            file=sys.stderr,
+        )
+        return None
+
+    settings.ready_notice_audio_file.parent.mkdir(parents=True, exist_ok=True)
+
+    try:
+        # A softer cue that is still clear in a quiet studio environment.
+        notice_sound = pyfxr.tone(
+            pitch="F4",
+            attack=0.02,
+            decay=0.08,
+            sustain=0.08,
+            release=0.12,
+        )
+        notice_sound.save(str(settings.ready_notice_audio_file))
+        return settings.ready_notice_audio_file
+    except Exception as exc:
+        print(
+            f"Warning: failed to generate ready notice sound: {exc}",
+            file=sys.stderr,
+        )
+        return None
+
+
+def play_ready_notice_sound(notice_file: Path | None) -> None:
+    if notice_file is None:
+        return
+
+    try:
+        play_audio_file(notice_file)
+    except Exception as exc:
+        print(f"Warning: failed to play ready notice sound: {exc}", file=sys.stderr)
 
 
 def transcribe_audio(model: whisper.Whisper, audio_file: Path, language: str) -> str:
@@ -310,7 +362,7 @@ def ollama_port_from_base_url(base_url: str) -> int:
 def release_ollama_port(base_url: str) -> None:
     """
     Release the configured Ollama port by terminating any process listening on it.
-    This keeps startup behavior simple and predictable.
+    This keeps startup behaviour simple and predictable.
     """
     port = ollama_port_from_base_url(base_url)
     result = subprocess.run(
@@ -631,11 +683,35 @@ def play_audio_file(audio_file: Path) -> None:
 
 
 def is_exit_phrase(transcribed_text: str) -> bool:
-    normalized_text = " ".join(transcribed_text.strip().lower().split())
-    return normalized_text == "exit conversation"
+    normalized_text = re.sub(r"[^a-z0-9\s]", " ", transcribed_text.lower())
+    normalized_text = " ".join(normalized_text.split())
+    return "terminate program" in normalized_text
+
+
+def parse_cli_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Convo LLM voice agent")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="show runtime warnings and additional diagnostics",
+    )
+    return parser.parse_args()
+
+
+def configure_warning_behaviour(verbose: bool) -> None:
+    if verbose:
+        warnings.resetwarnings()
+        return
+
+    # Hide non-critical runtime warnings in normal mode.
+    warnings.filterwarnings("ignore")
 
 
 def main() -> None:
+    cli_args = parse_cli_args()
+    configure_warning_behaviour(verbose=cli_args.verbose)
+
     settings = load_app_settings()
     keys = load_keys(settings.keys_file)
     chat_log_path = create_chat_log_path(settings.llm.model)
@@ -658,14 +734,18 @@ def main() -> None:
     whisper_model = whisper.load_model(settings.whisper.model_name)
 
     history: list[tuple[str, str]] = []
+    ready_notice_file = prepare_ready_notice_sound(settings.audio)
 
-    print("Ready. Say 'Exit conversation' to stop.")
+    print("Systems Ready")
 
     try:
         while True:
             try:
                 wait_for_trigger(settings.trigger)
-                audio_file = record_audio(settings.audio)
+                audio_file = record_audio(
+                    settings.audio,
+                    ready_notice_file=ready_notice_file,
+                )
                 user_text = transcribe_audio(
                     whisper_model, audio_file, language=settings.whisper.language
                 )
@@ -677,7 +757,7 @@ def main() -> None:
                 print(f"You said: {user_text}")
 
                 if is_exit_phrase(user_text):
-                    print("Stopping conversation loop.")
+                    print("Exit phrase detected. Stopping conversation loop.")
                     break
 
                 prompt = build_prompt(
