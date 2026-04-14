@@ -28,7 +28,7 @@ All of these are themselves programs that use a neural network transformer archi
 
 ---
 
-## Quick Start — macOS
+## Quick Start - macOS
 
 ### Install system dependencies
 
@@ -36,8 +36,8 @@ All of these are themselves programs that use a neural network transformer archi
 brew install portaudio ffmpeg ollama
 ```
 
-- `portaudio` — used by sounddevice for microphone capture
-- `ollama` — runs local LLM models
+- `portaudio` - used by sounddevice for microphone capture
+- `ollama` - runs local LLM models
 
 ### Install Python dependencies
 
@@ -78,7 +78,7 @@ Say `exit` or `quit` to stop the session.
 
 ---
 
-## Quick Start — Raspberry Pi
+## Quick Start - Raspberry Pi
 
 ### Install system dependencies
 
@@ -139,15 +139,15 @@ If audio playback fails, ensure one of `aplay`, `paplay`, or `ffplay` is install
 
 The app writes logs to dedicated folders:
 
-- `llm_logs/ollama_server.log` — Ollama server start/runtime logs
-- `chat_logs/<ISO_DATETIME>__<MODEL>.json` — one JSON file per chat session
-- `temp_audio/` — temporary input/output WAV files used during each turn
+- `llm_logs/ollama_server.log` - Ollama server start/runtime logs
+- `chat_logs/<ISO_DATETIME>__<MODEL>.json` - one JSON file per chat session
+- `temp_audio/` - temporary input/output WAV files used during each turn
 
 Each chat session JSON includes:
 
-- `meta.llm` — exact `llm` config values used for that session
-- `meta.prompts` — exact `prompts` config values used for that session
-- `messages` — timestamped user/assistant text messages
+- `meta.llm` - exact `llm` config values used for that session
+- `meta.prompts` - exact `prompts` config values used for that session
+- `messages` - timestamped user/assistant text messages
 
 Example filename:
 
@@ -155,19 +155,19 @@ Example filename:
 
 ---
 
-## 4) Configuration — config.json
+## 4) Configuration - config.json
 
 All runtime settings live in `config.json`. Edit it freely; no Python code changes
 are needed.
 
 ```
 config.json
-├── audio        — sample rate, recording length, input device
-├── whisper      — model name (tiny/base/small/medium/large/turbo), language
-├── trigger      — keyboard or serial trigger mode
-├── llm          — provider, model name, Ollama URL, history length
-├── tts          — piper binary path, voice model path
-└── prompts      — session preamble, per-request preamble
+├── audio        - sample rate, recording length, input device
+├── whisper      - model name (tiny/base/small/medium/large/turbo), language
+├── trigger      - keyboard or serial trigger mode
+├── llm          - provider, model name, Ollama URL, history length
+├── tts          - piper binary path, voice model path
+└── prompts      - session preamble, per-request preamble
 ```
 
 Whisper model guidance:
@@ -211,8 +211,8 @@ You only need the key for the provider you are using. A template is at `keys.exa
 
 In `config.json` under `prompts`:
 
-- `session_preamble` — sets the overall character and behavior for the whole session
-- `request_preamble` — a brief instruction added to every individual request
+- `session_preamble` - sets the overall character and behavior for the whole session
+- `request_preamble` - a brief instruction added to every individual request
 
 Example:
 
@@ -229,8 +229,8 @@ Example:
 
 Set `trigger.source` in `config.json`:
 
-- `"keyboard"` — press Enter before each recording (default)
-- `"serial"` — wait for a serial line containing the trigger text
+- `"keyboard"` - press Enter before each recording (default)
+- `"serial"` - wait for a serial line containing the trigger text
 
 For serial mode, also set `serial_port`, `serial_baud_rate`, and `serial_trigger_text`,
 then install pyserial:
