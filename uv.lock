@@ -212,7 +212,7 @@ wheels = [
 ]
 
 [[package]]
-name = "convo-llm-template"
+name = "convo-llm-voice-agent-bootstrap"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

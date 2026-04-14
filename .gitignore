@@ -1,6 +1,9 @@
 .venv/
 __pycache__/
 *.py[cod]
+.DS_Store
+.codespaces/
+*.code-workspace
 temp_audio/*.wav
 llm_logs/*.log
 chat_logs/*.json

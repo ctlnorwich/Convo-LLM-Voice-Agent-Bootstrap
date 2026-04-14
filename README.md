@@ -1,31 +1,36 @@
 # Convo LLM Voice Agent Bootstrap
 
-A template and playground for digital artists to easier experiment with conversational LLM (Large Language Model) voice agents and explore the technology critically. It is a local first application, defaulting to on-device models for privacy and sustainability concerns.
+A template and playground for digital artists to easier experiment with conversational LLM (Large Language Model) voice agents and explore the technology critically. It is a local first application, defaulting to lightweight on-device models for privacy and sustainability concerns.
 
-How it works: 
+**How it works**: 
 
 All voice based conversational llm agents consist of three parts.
 
-- **STT**: Speech-to-Tech. Whisper 
-- **LLM**: Ollama by default switchable to OpenAI, Gemini, or Anthropic
-- **TTS**: Piper 
+- **STT**: Speech-to-Tech. Whisper is the locally run general-purpose speech recognition model used here.
+- **LLM**: Large-Language Models. Ollama is the default application we use to run different LLMs locally but is switchable to use an online model like OpenAIs chatGPT, Googles Gemini, or Anthropics Claude.
+- **TTS**: Text-to-Speech. Piper is the speech system that generates voices from provided text.
 
-All of these are trans
+All of these are themselves programs that use a neural network transformer architecture (the T in ChatGPT). This is the groundbreaking programming technique that has made many modern "AI" programs possible. 
 
-How it works:
+****User flow**:
 
-1. Press Enter (or send a serial trigger) to begin recording
-2. Whisper transcribes your speech
-3. The LLM generates a response
-4. Piper speaks the response aloud
+1. Waits for a trigger (Dafault is the Enter key) to begin listening.
+2. Whisper transcribes your speech to text.
+3. Ollama running a LLM model as a service generates a text response from the transcription. (Online models are queried though a HTTP request)
+4. Piper speaks the response aloud in a voice.
+5. Repeat until either program is terminated with Ctrl+C or 
 
+[!NOTE]
 When using Ollama the script starts the Ollama server automatically, checks that
 the model you specified in `config.json` is downloaded (and pulls it if not), and
 shuts the server down cleanly when you exit.
 
+[!CAUTION]
+This is an LLM not a true artificial intelligence!
+
 ---
 
-## 1) Quick Start — macOS
+## Quick Start — macOS
 
 ### Install system dependencies
 
@@ -35,7 +40,6 @@ brew install portaudio ffmpeg ollama
 
 - `portaudio` — used by sounddevice for microphone capture
 - `ollama` — runs local LLM models
-- Piper TTS is a Python dependency, no separate install needed
 
 ### Install Python dependencies
 
@@ -76,7 +80,7 @@ Say `exit` or `quit` to stop the session.
 
 ---
 
-## 2) Quick Start — Raspberry Pi
+## Quick Start — Raspberry Pi
 
 ### Install system dependencies
 
@@ -133,7 +137,7 @@ If audio playback fails, ensure one of `aplay`, `paplay`, or `ffplay` is install
 
 ---
 
-## 3) Logs
+## Logs
 
 The app writes logs to dedicated folders:
 
@@ -189,7 +193,7 @@ When using Ollama, the model is pulled automatically on first run.
 
 ---
 
-## 5) API keys
+## API keys
 
 For online providers, create a `keys.json` file in the project root:
 
@@ -205,7 +209,7 @@ You only need the key for the provider you are using. A template is at `keys.exa
 
 ---
 
-## 6) Preambles
+## Preambles
 
 In `config.json` under `prompts`:
 
@@ -223,7 +227,7 @@ Example:
 
 ---
 
-## 7) Trigger modes
+## Trigger modes
 
 Set `trigger.source` in `config.json`:
 
@@ -241,7 +245,7 @@ The microcontroller should send a line containing the trigger text (default: `TR
 
 ---
 
-## 8) English Piper voices
+## English Piper voices
 
 This project includes a downloader for all English voices under:
 
@@ -285,7 +289,7 @@ Hugging Face repository under other language folders.
 
 ---
 
-## 9) Debugging
+## Debugging
 
 If the app fails to start or run, check these first:
 
@@ -301,3 +305,10 @@ If the app fails to start or run, check these first:
   `.onnx.json` file exists alongside it.
 - No serial trigger response:
   install pyserial (`uv add pyserial`) and confirm `trigger.serial_port` and baud rate.
+
+---
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 or later
+(GPL-3.0-or-later). See [LICENSE](LICENSE) for the full license text.

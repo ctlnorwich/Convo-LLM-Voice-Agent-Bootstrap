@@ -156,7 +156,7 @@ def create_chat_log_path(model_name: str) -> Path:
     safe_model = sanitize_for_filename(model_name)
     chat_dir = Path("chat_logs")
     chat_dir.mkdir(parents=True, exist_ok=True)
-    return chat_dir / f"{safe_timestamp}__{safe_model}.json"
+    return chat_dir / f"{safe_timestamp}_{safe_model}.json"
 
 
 def write_chat_log(chat_log_path: Path, chat_log_data: dict[str, object]) -> None:
@@ -694,7 +694,7 @@ def main() -> None:
                 chat_log_data["messages"].append(
                     {
                         "timestamp": datetime.now().isoformat(timespec="seconds"),
-                        "role": "assistant",
+                        "role": "agent",
                         "text": assistant_text,
                     }
                 )
