@@ -2,6 +2,9 @@
 
 A template and playground for digital artists to easier experiment with conversational LLM (Large Language Model) voice agents and explore the technology critically. It is a local first application, defaulting to lightweight on-device models for privacy and sustainability concerns.
 
+> [!CAUTION]
+> A LLM is not a true intelligence. It does not truly understand the world, form intentions, rationalise decisions or reason from first principles; it predicts likely next words by learning statistical patterns from enormous text datasets. Its outputs may feel intelligent but this is because those patterns encode a huge amount of human language, knowledge, and writing style. LLMs are not technological magic - in reality they are the result of advanced data science using massive computing power to do large-scale training, optimization, and probability. One of the consequences of this approach is that LLMs can deceive, hallucinate, be biased and even by confidently incorrect as it mirrors the inherently flawed human data it works from.
+
 **How it works**: 
 
 All voice based conversational LLM agents consist of three parts:
@@ -23,8 +26,6 @@ All of these are themselves programs that use a neural network transformer archi
 > [!NOTE]
 > When using Ollama the script starts the Ollama server automatically, checks that the model you specified in `config.json` is downloaded (and pulls it if not), and shuts the server down cleanly when you exit.
 
-> [!CAUTION]
-> A LLM is not a true intelligence. It does not truly understand the world, form intentions, rationalise decisions or reason from first principles; it predicts likely next words by learning statistical patterns from enormous text datasets. Its outputs may feel intelligent but this is because those patterns encode a huge amount of human language, knowledge, and writing style. LLMs are not technological magic - in reality they are the result of advanced data science using massive computing power to do large-scale training, optimization, and probability. One of the consequences of this approach is that LLMs can deceive, hallucinate, be biased and even by confidently incorrect as it mirrors the inherently flawed human data it works from.
 
 ---
 
