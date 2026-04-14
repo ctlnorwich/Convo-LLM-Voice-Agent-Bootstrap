@@ -286,7 +286,7 @@ These are English voice models. Many other languages are available in the same
 Hugging Face repository under other language folders.
 
 [!CAUTION]
->> These voices are trained from Mozillas's Common Voice dataset which is open licenced data. Other voice files can be found when searching "piper-tts trained models" but many of these are trained off proprietary voice data such as voice actors work, youtube videos and other data that is intellectual property. Using these could be considered unethical unless you have permission from the rights holders.
+> These voices are trained from Mozillas's Common Voice dataset which is open licenced data. Other voice files can be found when searching "piper-tts trained models" but many of these are trained off proprietary voice data such as voice actors work, youtube videos and other data that is intellectual property. Using these could be considered unethical unless you have permission from the rights holders.
 
 ---
 
