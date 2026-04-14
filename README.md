@@ -1,4 +1,4 @@
-# Convo LLM Voice Agent Bootstrap
+# Conversational LLM Voice Agent Bootstrap
 
 A template and playground for digital artists to easier experiment with conversational LLM (Large Language Model) voice agents and explore the technology critically. It is a local first application, defaulting to lightweight on-device models for privacy and sustainability concerns.
 
@@ -24,7 +24,7 @@ All of these are themselves programs that use a neural network transformer archi
 > When using Ollama the script starts the Ollama server automatically, checks that the model you specified in `config.json` is downloaded (and pulls it if not), and shuts the server down cleanly when you exit.
 
 > [!CAUTION]
-> This is an LLM not a true artificial intelligence!
+> A LLM is not true intelligence. It does not truly understand the world, form intentions, or reason from first principles - it predicts likely next words by learning statistical patterns from enormous text datasets. Its outputs may feel intelligent but this is because those patterns encode a huge amount of human language, knowledge, and style. LLMs are in reality the result of advanced data science using massive computing power to do large-scale training, optimization, and probability; not conscious thought or independent understanding.
 
 ---
 
@@ -284,6 +284,9 @@ The selectable English voices currently include:
 
 These are English voice models. Many other languages are available in the same
 Hugging Face repository under other language folders.
+
+[!CAUTION]
+>> These voices are trained from Mozillas's Common Voice dataset which is open licenced data. Other voice files can be found when searching "piper-tts trained models" but many of these are trained off proprietary voice data such as voice actors work, youtube videos and other data that is intellectual property. Using these could be considered unethical unless you have permission from the rights holders.
 
 ---
 

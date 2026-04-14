@@ -28,7 +28,7 @@
   },
   "tts": {
     "piper_binary": "piper",
-    "voice_model_path": "voices/en_US-lessac-medium.onnx",
+    "voice_model_path": "voices/en_US/lessac/medium/en_US-lessac-medium.onnx",
     "output_wav": "temp_audio/tts_output.wav",
     "speaker_id": null
   },
