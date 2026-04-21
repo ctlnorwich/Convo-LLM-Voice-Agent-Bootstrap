@@ -15,7 +15,7 @@
     "language": "en"
   },
   "trigger": {
-    "source": "serial",
+    "source": "keyboard",
     "serial_port": "/dev/tty.usbmodem48CA435EDABC2",
     "serial_baud_rate": 115200,
     "serial_trigger_text": "TRIGGER"
